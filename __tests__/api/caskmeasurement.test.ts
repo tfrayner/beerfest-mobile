@@ -2,6 +2,7 @@ import { apiClient } from '@/api/client';
 import {
   listDipsByCask,
   listMeasurementsByCask,
+  listMeasurementBatches,
   loadMeasurement,
   submitMeasurement,
 } from '@/api/caskmeasurement';
@@ -52,9 +53,24 @@ describe('listMeasurementsByCask', () => {
     expect(mockGet).toHaveBeenCalledWith('/caskmeasurement/list_by_cask/5');
   });
 
-  it('throws with fallback message', async () => {
+  it('throws on failure', async () => {
     mockGet.mockResolvedValueOnce({ data: { success: false } });
     await expect(listMeasurementsByCask(5)).rejects.toThrow('Failed to list measurements');
+  });
+});
+
+describe('listMeasurementBatches', () => {
+  it('requests the correct URL with festival id and returns batches', async () => {
+    const batches = [{ measurement_batch_id: 1, measurement_time: '2026-05-01T10:00:00Z', description: 'Saturday AM' }];
+    mockGet.mockResolvedValueOnce({ data: { success: true, objects: batches } });
+    const result = await listMeasurementBatches(3);
+    expect(result).toEqual(batches);
+    expect(mockGet).toHaveBeenCalledWith('/measurementbatch/list/3');
+  });
+
+  it('throws on failure', async () => {
+    mockGet.mockResolvedValueOnce({ data: { success: false, error: 'no batches' } });
+    await expect(listMeasurementBatches(3)).rejects.toThrow('no batches');
   });
 });
 

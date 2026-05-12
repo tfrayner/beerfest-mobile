@@ -1,5 +1,5 @@
 import { apiClient } from '@/api/client';
-import { listCasks, listCasksByStillage, loadCask, submitCask } from '@/api/casks';
+import { listCasks, listCasksByStillage, loadCask, submitCask, listContainerSizes } from '@/api/casks';
 import type { Cask } from '@/types/api';
 
 jest.mock('@/api/client', () => ({
@@ -106,5 +106,20 @@ describe('submitCask', () => {
   it('throws on failure', async () => {
     mockPost.mockResolvedValueOnce({ data: { success: false, error: 'save failed' } });
     await expect(submitCask([{ cask_id: 5 }])).rejects.toThrow('save failed');
+  });
+});
+
+describe('listContainerSizes', () => {
+  it('requests the correct URL and returns container sizes', async () => {
+    const sizes = [{ container_size_id: 1, volume: 72, description: 'Firkin' }];
+    mockGet.mockResolvedValueOnce({ data: { success: true, objects: sizes } });
+    const result = await listContainerSizes();
+    expect(result).toEqual(sizes);
+    expect(mockGet).toHaveBeenCalledWith('/containersize/list');
+  });
+
+  it('throws on failure', async () => {
+    mockGet.mockResolvedValueOnce({ data: { success: false, error: 'not found' } });
+    await expect(listContainerSizes()).rejects.toThrow('not found');
   });
 });

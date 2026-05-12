@@ -22,8 +22,8 @@ A React Native / Expo mobile app for managing casks and cask measurements agains
 ## Installation
 
 ```bash
-git clone https://github.com/tfrayner/beerfest-mobile.git
-cd beerfest-mobile
+git clone https://github.com/tfrayner/beerfestmobile.git
+cd beerfestmobile
 npm install
 ```
 
@@ -39,11 +39,15 @@ Edit `.env`:
 
 ```
 EXPO_PUBLIC_API_BASE_URL=https://your-beerfestdb-host.example.com
+EXPO_PUBLIC_CURRENT_FESTIVAL="CBF 2024"
 ```
 
-The `EXPO_PUBLIC_API_BASE_URL` value is baked in at build time. For development
-builds pointing at a local server, you can use your machine's LAN IP address,
-e.g. `http://192.168.1.100:8000`.
+- `EXPO_PUBLIC_API_BASE_URL` — URL of your BeerFestDB server (baked in at build
+  time; use your machine's LAN IP for local development, e.g.
+  `http://192.168.1.100:3000`).
+- `EXPO_PUBLIC_CURRENT_FESTIVAL` — exact name of the festival the app should
+  display on the Stillages tab. Must match a `festival_name` value returned by
+  the server.
 
 ## Running the App
 
@@ -78,8 +82,8 @@ Remember to set `EXPO_PUBLIC_API_BASE_URL` as an EAS secret or in your
 ## Usage
 
 1. **Login** — Enter your BeerFestDB username and password on the login screen.
-2. **Festivals tab** — Lists all festivals on the server. Tap a festival to see
-   its stillage locations, then tap a stillage to see its casks.
+2. **Stillages tab** — Shows the stillage locations for the festival configured
+   via `EXPO_PUBLIC_CURRENT_FESTIVAL`. Tap a stillage to see its casks.
 3. **Search tab** — Pick a festival and product category to list casks directly.
    The festival list auto-selects the most recent entry; the category list
    defaults to "Beer".
@@ -97,7 +101,7 @@ Remember to set `EXPO_PUBLIC_API_BASE_URL` as an EAS secret or in your
 ```
 app/                    Expo Router screens (file-based routing)
   (auth)/               Login screen
-  (tabs)/               Bottom tab screens (festivals, search)
+  (tabs)/               Bottom tab screens (stillages, search)
   festival/             Drill-down screens (stillage → cask → measurements)
 src/
   api/                  Axios API calls (festivals, casks, measurements, …)
