@@ -5,7 +5,7 @@ import {
   loadMeasurement,
   submitMeasurement,
 } from '@/api/caskmeasurement';
-import type { CaskDip, CaskMeasurement } from '@/types/api';
+import type { CaskMeasurement } from '@/types/api';
 
 jest.mock('@/api/client', () => ({
   apiClient: { get: jest.fn(), post: jest.fn() },
@@ -14,19 +14,12 @@ jest.mock('@/api/client', () => ({
 const mockGet = apiClient.get as jest.Mock;
 const mockPost = apiClient.post as jest.Mock;
 
-const DIP: CaskDip = {
-  cask_measurement_id: 1,
-  measurement_time: '2026-05-01T12:00:00Z',
-  volume: 40,
-  container_measure: 'litres',
-};
-
-const MEASUREMENT: CaskMeasurement = {
+const DIP: CaskMeasurement = {
   cask_measurement_id: 1,
   cask_id: 5,
-  measurement_batch_id: 0,
+  measurement_batch_id: 2,
   measurement_time: '2026-05-01T12:00:00Z',
-  measurement_batch_name: '',
+  measurement_batch_name: 'Batch A',
   volume: 40,
   container_measure_id: 1,
   comment: '',
@@ -42,7 +35,7 @@ describe('listDipsByCask', () => {
     mockGet.mockResolvedValueOnce({ data: { success: true, objects: [DIP] } });
     const result = await listDipsByCask(5);
     expect(result).toEqual([DIP]);
-    expect(mockGet).toHaveBeenCalledWith('/cask/list_dips/5');
+    expect(mockGet).toHaveBeenCalledWith('/caskmeasurement/list_by_cask/5');
   });
 
   it('throws on failure', async () => {
@@ -53,9 +46,9 @@ describe('listDipsByCask', () => {
 
 describe('listMeasurementsByCask', () => {
   it('returns measurements on success', async () => {
-    mockGet.mockResolvedValueOnce({ data: { success: true, objects: [MEASUREMENT] } });
+    mockGet.mockResolvedValueOnce({ data: { success: true, objects: [DIP] } });
     const result = await listMeasurementsByCask(5);
-    expect(result).toEqual([MEASUREMENT]);
+    expect(result).toEqual([DIP]);
     expect(mockGet).toHaveBeenCalledWith('/caskmeasurement/list_by_cask/5');
   });
 
@@ -67,9 +60,9 @@ describe('listMeasurementsByCask', () => {
 
 describe('loadMeasurement', () => {
   it('returns measurement data on success', async () => {
-    mockGet.mockResolvedValueOnce({ data: { success: true, data: MEASUREMENT } });
+    mockGet.mockResolvedValueOnce({ data: { success: true, data: DIP } });
     const result = await loadMeasurement(1);
-    expect(result).toEqual(MEASUREMENT);
+    expect(result).toEqual(DIP);
     expect(mockGet).toHaveBeenCalledWith('/caskmeasurement/load_form', {
       params: { cask_measurement_id: 1 },
     });
@@ -85,7 +78,7 @@ describe('submitMeasurement', () => {
   it('posts changes and resolves on success', async () => {
     mockPost.mockResolvedValueOnce({ data: { success: true } });
     await expect(
-      submitMeasurement([{ cask_id: 5, volume: 35, comment: 'ok' }]),
+      submitMeasurement([{ cask_id: 5, measurement_batch_id: 1, volume: 35, comment: 'ok' }]),
     ).resolves.toBeUndefined();
 
     const [url, body] = mockPost.mock.calls[0];
@@ -95,7 +88,7 @@ describe('submitMeasurement', () => {
 
   it('supports empty string volume (delete intent)', async () => {
     mockPost.mockResolvedValueOnce({ data: { success: true } });
-    await submitMeasurement([{ cask_id: 5, volume: '' }]);
+    await submitMeasurement([{ cask_id: 5, measurement_batch_id: 1, volume: '' }]);
 
     const body = mockPost.mock.calls[0][1] as string;
     const parsed = JSON.parse(decodeURIComponent(body.replace('changes=', '')));
@@ -104,6 +97,6 @@ describe('submitMeasurement', () => {
 
   it('throws on failure', async () => {
     mockPost.mockResolvedValueOnce({ data: { success: false, error: 'save failed' } });
-    await expect(submitMeasurement([{ cask_id: 5, volume: 10 }])).rejects.toThrow('save failed');
+    await expect(submitMeasurement([{ cask_id: 5, measurement_batch_id: 1, volume: 10 }])).rejects.toThrow('save failed');
   });
 });

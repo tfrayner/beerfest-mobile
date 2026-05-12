@@ -1,9 +1,9 @@
 import { StyleSheet, View } from 'react-native';
-import { List, Text } from 'react-native-paper';
-import type { CaskDip } from '@/types/api';
+import { List } from 'react-native-paper';
+import type { CaskMeasurement } from '@/types/api';
 
 interface Props {
-  dip: CaskDip;
+  dip: CaskMeasurement;
   onPress: () => void;
 }
 
@@ -18,7 +18,7 @@ function formatDateTime(iso: string): string {
 export default function MeasurementCard({ dip, onPress }: Props) {
   return (
     <List.Item
-      title={`${dip.volume} ${dip.container_measure}`}
+      title={`${dip.volume ?? '—'} (${dip.measurement_batch_name})`}
       description={formatDateTime(dip.measurement_time)}
       left={(props) => <List.Icon {...props} icon="gauge" />}
       right={(props) => <List.Icon {...props} icon="pencil-outline" />}

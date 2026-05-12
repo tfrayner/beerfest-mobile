@@ -2,12 +2,28 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { List, Text, ActivityIndicator, Appbar } from 'react-native-paper';
 import { router } from 'expo-router';
 import { useFestivals } from '@/hooks/useFestivals';
+import { useStillageLocations } from '@/hooks/useStillageLocations';
 import { useAuthStore } from '@/store/authStore';
 import { apiClient } from '@/api/client';
 
-export default function FestivalsScreen() {
-  const { data: festivals, isLoading, error, refetch } = useFestivals();
+const CURRENT_FESTIVAL_NAME = process.env.EXPO_PUBLIC_CURRENT_FESTIVAL ?? '';
+
+export default function StillageScreen() {
+  const { data: festivals, isLoading: festivalsLoading, error: festivalsError } = useFestivals();
   const logout = useAuthStore((s) => s.logout);
+
+  const festival = festivals?.find((f) => f.name === CURRENT_FESTIVAL_NAME);
+  const festivalId = festival?.festival_id ?? 0;
+
+  const {
+    data: locations,
+    isLoading: locationsLoading,
+    error: locationsError,
+    refetch,
+  } = useStillageLocations(festivalId);
+
+  const isLoading = festivalsLoading || locationsLoading;
+  const error = festivalsError ?? locationsError;
 
   const handleLogout = async () => {
     try {
@@ -20,10 +36,15 @@ export default function FestivalsScreen() {
     }
   };
 
+  const configError =
+    !festivalsLoading && festivals && !festival
+      ? `Festival "${CURRENT_FESTIVAL_NAME}" not found. Check EXPO_PUBLIC_CURRENT_FESTIVAL.`
+      : null;
+
   return (
     <View style={styles.container}>
       <Appbar.Header>
-        <Appbar.Content title="Festivals" />
+        <Appbar.Content title={festival?.name ?? 'Stillage'} />
         <Appbar.Action icon="logout" onPress={handleLogout} />
       </Appbar.Header>
 
@@ -31,29 +52,35 @@ export default function FestivalsScreen() {
         <ActivityIndicator animating size="large" style={styles.centre} />
       )}
 
-      {error && (
+      {(error || configError) && (
         <View style={styles.centre}>
-          <Text style={styles.error}>{error.message}</Text>
+          <Text style={styles.error}>{configError ?? error?.message}</Text>
         </View>
       )}
 
       <FlatList
-        data={festivals}
-        keyExtractor={(f) => String(f.festival_id)}
+        data={locations}
+        keyExtractor={(l) => String(l.stillage_location_id)}
         onRefresh={refetch}
         refreshing={isLoading}
         renderItem={({ item }) => (
           <List.Item
-            title={item.name}
-            description={`${item.year}  •  ${item.fst_start_date} – ${item.fst_end_date}`}
-            left={(props) => <List.Icon {...props} icon="beer-outline" />}
+            title={item.description}
+            left={(props) => <List.Icon {...props} icon="garage" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() =>
-              router.push(`/festival/${item.festival_id}`)
+              router.push(`/festival/${festivalId}/stillage/${item.stillage_location_id}`)
             }
           />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListEmptyComponent={
+          !isLoading && !configError ? (
+            <View style={styles.centre}>
+              <Text>No stillage locations found.</Text>
+            </View>
+          ) : null
+        }
       />
     </View>
   );

@@ -4,11 +4,13 @@ import type {
   ApiFormResponse,
   ApiSubmitResponse,
   CaskMeasurement,
-  CaskDip,
+  MeasurementBatch,
 } from '@/types/api';
 
-export async function listDipsByCask(caskId: number): Promise<CaskDip[]> {
-  const res = await apiClient.get<ApiListResponse<CaskDip>>(`/cask/list_dips/${caskId}`);
+export async function listDipsByCask(caskId: number): Promise<CaskMeasurement[]> {
+  const res = await apiClient.get<ApiListResponse<CaskMeasurement>>(
+    `/caskmeasurement/list_by_cask/${caskId}`,
+  );
   if (!res.data.success) throw new Error(res.data.error ?? 'Failed to list dips');
   return res.data.objects;
 }
@@ -18,6 +20,14 @@ export async function listMeasurementsByCask(caskId: number): Promise<CaskMeasur
     `/caskmeasurement/list_by_cask/${caskId}`,
   );
   if (!res.data.success) throw new Error(res.data.error ?? 'Failed to list measurements');
+  return res.data.objects;
+}
+
+export async function listMeasurementBatches(festivalId: number): Promise<MeasurementBatch[]> {
+  console.log('[listMeasurementBatches] festivalId:', festivalId);
+  const res = await apiClient.get<ApiListResponse<MeasurementBatch>>(`/measurementbatch/list/${festivalId}`);
+  console.log('[listMeasurementBatches] response:', res.status, JSON.stringify(res.data));
+  if (!res.data.success) throw new Error(res.data.error ?? 'Failed to list measurement batches');
   return res.data.objects;
 }
 
@@ -32,6 +42,7 @@ export async function loadMeasurement(measurementId: number): Promise<CaskMeasur
 
 export type MeasurementSubmit = {
   cask_measurement_id?: number;
+  measurement_batch_id: number;
   cask_id: number;
   /** Empty string instructs the server to delete the dip record. */
   volume: number | '';

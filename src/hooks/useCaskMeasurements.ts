@@ -1,5 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listDipsByCask, submitMeasurement, type MeasurementSubmit } from '@/api/caskmeasurement';
+import {
+  listDipsByCask,
+  listMeasurementBatches,
+  submitMeasurement,
+  type MeasurementSubmit,
+} from '@/api/caskmeasurement';
+
+export function useMeasurementBatches(festivalId: number) {
+  return useQuery({
+    queryKey: ['measurementBatches', festivalId],
+    queryFn: () => listMeasurementBatches(festivalId),
+    staleTime: 5 * 60 * 1000,
+    enabled: festivalId > 0,
+  });
+}
 
 export function useCaskDips(caskId: number) {
   return useQuery({

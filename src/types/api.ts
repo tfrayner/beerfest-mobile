@@ -38,9 +38,9 @@ export interface Cask {
   distributor_id: number;
   currency_id: number;
   price: string;
-  festival_ref: string;
-  int_reference: string;
-  ext_reference: string;
+  festival_ref: number | string | null;
+  int_reference: string | null;
+  ext_reference: string | null;
   comment: string;
   is_vented: boolean;
   is_tapped: boolean;
@@ -53,8 +53,13 @@ export interface Cask {
   stillage_z: number;
 }
 
-export interface CaskMeasurement {
-  cask_measurement_id: number;
+export interface MeasurementBatch {
+  measurement_batch_id: number;
+  measurement_time: string;
+  description: string | null;
+}
+
+export interface CaskMeasurement {  cask_measurement_id: number;
   cask_id: number;
   measurement_batch_id: number;
   measurement_time: string;
@@ -62,13 +67,6 @@ export interface CaskMeasurement {
   volume: number | null;
   container_measure_id: number;
   comment: string;
-}
-
-export interface CaskDip {
-  cask_measurement_id: number;
-  measurement_time: string;
-  volume: number;
-  container_measure: string;
 }
 
 export interface ApiListResponse<T> {

@@ -17,7 +17,6 @@ import { TextInput } from 'react-native-paper';
 import { useState } from 'react';
 
 type CaskFormValues = {
-  festival_ref: string;
   int_reference: string;
   ext_reference: string;
   comment: string;
@@ -39,9 +38,8 @@ export default function CaskDetailScreen() {
   useEffect(() => {
     if (cask) {
       reset({
-        festival_ref: cask.festival_ref ?? '',
-        int_reference: cask.int_reference ?? '',
-        ext_reference: cask.ext_reference ?? '',
+        int_reference: String(cask.int_reference ?? ''),
+        ext_reference: String(cask.ext_reference ?? ''),
         comment: cask.comment ?? '',
         is_vented: cask.is_vented,
         is_tapped: cask.is_tapped,
@@ -52,7 +50,7 @@ export default function CaskDetailScreen() {
   }, [cask]);
 
   const onSubmit = (values: CaskFormValues) => {
-    submitCask([{ cask_id: id, ...values }], {
+    submitCask([{ cask_id: id, cask_management_id: cask.cask_management_id, ...values }], {
       onSuccess: () => setSnackVisible(true),
     });
   };
@@ -73,7 +71,7 @@ export default function CaskDetailScreen() {
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title={cask.festival_ref || `Cask #${cask.cask_id}`} />
+        <Appbar.Content title={`Cask ID: ${String(cask.festival_ref ?? cask.cask_id)}`} />
         <Appbar.Action
           icon="clipboard-list-outline"
           onPress={() => router.push(
@@ -134,20 +132,6 @@ export default function CaskDetailScreen() {
         {/* Editable reference fields */}
         <Text variant="labelLarge" style={styles.sectionLabel}>References</Text>
 
-        <Controller
-          control={control}
-          name="festival_ref"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <TextInput
-              label="Festival Ref"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              mode="outlined"
-              style={styles.input}
-            />
-          )}
-        />
         <Controller
           control={control}
           name="int_reference"

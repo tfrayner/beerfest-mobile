@@ -1,10 +1,13 @@
-import { StyleSheet, View } from 'react-native';
-import { TextInput, Button, HelperText, Text } from 'react-native-paper';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { TextInput, Button, HelperText, List, Divider } from 'react-native-paper';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { MeasurementBatch } from '@/types/api';
 
 const schema = z.object({
+  measurement_batch_id: z.number().int().min(1, 'Please select a measurement batch.'),
   volume: z
     .string()
     .refine(
@@ -17,6 +20,8 @@ const schema = z.object({
 export type MeasurementFormValues = z.infer<typeof schema>;
 
 interface Props {
+  batches: MeasurementBatch[];
+  defaultBatchId?: number;
   defaultVolume?: string;
   defaultComment?: string;
   isEdit: boolean;
@@ -25,7 +30,13 @@ interface Props {
   onCancel: () => void;
 }
 
+function batchLabel(b: MeasurementBatch): string {
+  return b.description ? `${b.measurement_time} — ${b.description}` : b.measurement_time;
+}
+
 export default function MeasurementForm({
+  batches,
+  defaultBatchId = 0,
   defaultVolume = '',
   defaultComment = '',
   isEdit,
@@ -33,17 +44,72 @@ export default function MeasurementForm({
   onSubmit,
   onCancel,
 }: Props) {
+  const [batchOpen, setBatchOpen] = useState(false);
+
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<MeasurementFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { volume: defaultVolume, comment: defaultComment },
+    defaultValues: {
+      measurement_batch_id: defaultBatchId,
+      volume: defaultVolume,
+      comment: defaultComment,
+    },
   });
 
   return (
     <View>
+      <Controller
+        control={control}
+        name="measurement_batch_id"
+        render={({ field: { value, onChange } }) => {
+          const selected = batches.find((b) => b.measurement_batch_id === value);
+          return (
+            <View>
+              <Pressable onPress={() => setBatchOpen((o) => !o)}>
+                <TextInput
+                  label="Measurement Batch"
+                  value={selected ? batchLabel(selected) : ''}
+                  mode="outlined"
+                  editable={false}
+                  pointerEvents="none"
+                  right={
+                    <TextInput.Icon icon={batchOpen ? 'menu-up' : 'menu-down'} />
+                  }
+                  style={styles.input}
+                  testID="batch-input"
+                />
+              </Pressable>
+              {batchOpen && (
+                <View style={styles.dropdownList}>
+                  <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                    {batches.map((b, i) => (
+                      <View key={b.measurement_batch_id}>
+                        {i > 0 && <Divider />}
+                        <List.Item
+                          title={batchLabel(b)}
+                          onPress={() => {
+                            onChange(b.measurement_batch_id);
+                            setBatchOpen(false);
+                          }}
+                          titleNumberOfLines={2}
+                          style={styles.dropdownItem}
+                        />
+                      </View>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+          );
+        }}
+      />
+      <HelperText type="error" visible={!!errors.measurement_batch_id}>
+        {errors.measurement_batch_id?.message}
+      </HelperText>
+
       <Controller
         control={control}
         name="volume"
@@ -102,6 +168,16 @@ export default function MeasurementForm({
 
 const styles = StyleSheet.create({
   input: { marginBottom: 4 },
+  dropdownList: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    maxHeight: 200,
+    backgroundColor: '#fff',
+    marginBottom: 4,
+    elevation: 2,
+  },
+  dropdownItem: { paddingVertical: 4 },
   actions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12, gap: 8 },
   btn: {},
 });

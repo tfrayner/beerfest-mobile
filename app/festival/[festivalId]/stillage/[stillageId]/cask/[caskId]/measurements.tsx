@@ -2,20 +2,22 @@ import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { Appbar, ActivityIndicator, Text, FAB, Portal, Modal, Snackbar } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCaskDips, useSubmitMeasurement } from '@/hooks/useCaskMeasurements';
+import { useCaskDips, useMeasurementBatches, useSubmitMeasurement } from '@/hooks/useCaskMeasurements';
 import MeasurementCard from '@/components/MeasurementCard';
 import MeasurementForm from '@/components/MeasurementForm';
-import type { CaskDip } from '@/types/api';
+import type { CaskMeasurement } from '@/types/api';
 import type { MeasurementFormValues } from '@/components/MeasurementForm';
 
 export default function MeasurementsScreen() {
-  const { caskId } = useLocalSearchParams<{ caskId: string }>();
+  const { caskId, festivalId } = useLocalSearchParams<{ caskId: string; festivalId: string }>();
   const id = Number(caskId);
   const { data: dips, isLoading, error, refetch } = useCaskDips(id);
+  const festivalIdNum = Number(festivalId);
+  const { data: batches, isLoading: batchesLoading, error: batchesError } = useMeasurementBatches(festivalIdNum);
   const { mutate: submit, isPending } = useSubmitMeasurement(id);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingDip, setEditingDip] = useState<CaskDip | null>(null);
+  const [editingDip, setEditingDip] = useState<CaskMeasurement | null>(null);
   const [snackVisible, setSnackVisible] = useState(false);
   const [snackMessage, setSnackMessage] = useState('');
 
@@ -24,7 +26,7 @@ export default function MeasurementsScreen() {
     setModalVisible(true);
   };
 
-  const openEdit = (dip: CaskDip) => {
+  const openEdit = (dip: CaskMeasurement) => {
     setEditingDip(dip);
     setModalVisible(true);
   };
@@ -32,6 +34,7 @@ export default function MeasurementsScreen() {
   const handleSubmit = (values: MeasurementFormValues) => {
     const payload = {
       cask_id: id,
+      measurement_batch_id: values.measurement_batch_id,
       ...(editingDip ? { cask_measurement_id: editingDip.cask_measurement_id } : {}),
       // Empty string volume instructs the server to delete the dip
       volume: values.volume === '' ? ('' as const) : Number(values.volume),
@@ -90,8 +93,16 @@ export default function MeasurementsScreen() {
           <Text variant="titleMedium" style={styles.modalTitle}>
             {editingDip ? 'Edit Measurement' : 'Add Measurement'}
           </Text>
+          {batchesLoading && <ActivityIndicator animating size="small" style={{ marginBottom: 8 }} />}
+          {batchesError && (
+            <Text style={{ color: 'red', marginBottom: 8 }}>
+              Could not load batches: {batchesError.message}
+            </Text>
+          )}
           <MeasurementForm
-            defaultVolume={editingDip ? String(editingDip.volume) : ''}
+            batches={batches ?? []}
+            defaultBatchId={editingDip?.measurement_batch_id}
+            defaultVolume={editingDip ? String(editingDip.volume ?? '') : ''}
             defaultComment=""
             isEdit={!!editingDip}
             loading={isPending}

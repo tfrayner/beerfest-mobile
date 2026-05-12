@@ -26,7 +26,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="festival" />
+          <Stack.Screen name="festival/[festivalId]" />
         </Stack>
       </PaperProvider>
     </QueryClientProvider>

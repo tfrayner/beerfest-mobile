@@ -33,7 +33,18 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 403) {
-      _onUnauthorized?.();
+      console.warn(
+        '[apiClient] 403 received:',
+        error.config?.method?.toUpperCase(),
+        error.config?.url,
+        error.response?.data,
+      );
+      // Only treat as an auth failure if the response doesn't indicate a
+      // business-logic error (beerfestdb reuses 403 for validation failures
+      // but sets success:true in those cases).
+      if (error.response?.data?.success !== true) {
+        _onUnauthorized?.();
+      }
     }
     return Promise.reject(error);
   },
