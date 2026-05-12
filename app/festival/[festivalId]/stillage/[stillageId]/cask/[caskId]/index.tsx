@@ -9,7 +9,7 @@ import {
   Snackbar,
 } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useController } from 'react-hook-form';
 import { useCask, useSubmitCask } from '@/hooks/useCasks';
 import StatusFlagsEditor from '@/components/StatusFlagsEditor';
 import type { Cask } from '@/types/api';
@@ -33,7 +33,21 @@ export default function CaskDetailScreen() {
   const { mutate: submitCask, isPending, isSuccess, isError, error: mutateError } = useSubmitCask();
   const [snackVisible, setSnackVisible] = useState(false);
 
-  const { control, handleSubmit, reset } = useForm<CaskFormValues>();
+  const { control, handleSubmit, reset } = useForm<CaskFormValues>({    defaultValues: {
+      int_reference: '',
+      ext_reference: '',
+      comment: '',
+      is_vented: false,
+      is_tapped: false,
+      is_ready: false,
+      is_condemned: false,
+    },
+  });
+
+  const { field: ventedField } = useController({ control, name: 'is_vented' });
+  const { field: tappedField } = useController({ control, name: 'is_tapped' });
+  const { field: readyField } = useController({ control, name: 'is_ready' });
+  const { field: condemnedField } = useController({ control, name: 'is_condemned' });
 
   useEffect(() => {
     if (cask) {
@@ -41,10 +55,10 @@ export default function CaskDetailScreen() {
         int_reference: String(cask.int_reference ?? ''),
         ext_reference: String(cask.ext_reference ?? ''),
         comment: cask.comment ?? '',
-        is_vented: cask.is_vented,
-        is_tapped: cask.is_tapped,
-        is_ready: cask.is_ready,
-        is_condemned: cask.is_condemned,
+        is_vented: Boolean(cask.is_vented),
+        is_tapped: Boolean(cask.is_tapped),
+        is_ready: Boolean(cask.is_ready),
+        is_condemned: Boolean(cask.is_condemned),
       });
     }
   }, [cask]);
@@ -92,37 +106,33 @@ export default function CaskDetailScreen() {
 
         {/* Status flags */}
         <Text variant="labelLarge" style={styles.sectionLabel}>Status</Text>
+        <StatusFlagsEditor
+          isVented={ventedField.value}
+          isTapped={tappedField.value}
+          isReady={readyField.value}
+          isCondemned={condemnedField.value}
+          onVentedChange={ventedField.onChange}
+          onTappedChange={tappedField.onChange}
+          onReadyChange={readyField.onChange}
+          onCondemnedChange={condemnedField.onChange}
+        />
+
+        <Divider style={styles.divider} />
+
+        <Text variant="labelLarge" style={styles.sectionLabel}>Notes</Text>
         <Controller
           control={control}
-          name="is_vented"
-          render={({ field: { value, onChange } }) => (
-            <Controller
-              control={control}
-              name="is_tapped"
-              render={({ field: f2 }) => (
-                <Controller
-                  control={control}
-                  name="is_ready"
-                  render={({ field: f3 }) => (
-                    <Controller
-                      control={control}
-                      name="is_condemned"
-                      render={({ field: f4 }) => (
-                        <StatusFlagsEditor
-                          isVented={value}
-                          isTapped={f2.value}
-                          isReady={f3.value}
-                          isCondemned={f4.value}
-                          onVentedChange={onChange}
-                          onTappedChange={f2.onChange}
-                          onReadyChange={f3.onChange}
-                          onCondemnedChange={f4.onChange}
-                        />
-                      )}
-                    />
-                  )}
-                />
-              )}
+          name="comment"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <TextInput
+              label="Comment"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              mode="outlined"
+              multiline
+              numberOfLines={3}
+              style={styles.input}
             />
           )}
         />
@@ -156,26 +166,6 @@ export default function CaskDetailScreen() {
               onChangeText={onChange}
               onBlur={onBlur}
               mode="outlined"
-              style={styles.input}
-            />
-          )}
-        />
-
-        <Divider style={styles.divider} />
-
-        <Text variant="labelLarge" style={styles.sectionLabel}>Notes</Text>
-        <Controller
-          control={control}
-          name="comment"
-          render={({ field: { value, onChange, onBlur } }) => (
-            <TextInput
-              label="Comment"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              mode="outlined"
-              multiline
-              numberOfLines={3}
               style={styles.input}
             />
           )}

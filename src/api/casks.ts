@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { ApiListResponse, ApiFormResponse, ApiSubmitResponse, Cask } from '@/types/api';
+import type { ApiListResponse, ApiFormResponse, ApiSubmitResponse, Cask, ContainerSize } from '@/types/api';
 
 export async function listCasks(festivalId: number, categoryId: number): Promise<Cask[]> {
   const res = await apiClient.get<ApiListResponse<Cask>>(
@@ -29,4 +29,12 @@ export async function submitCask(changes: Partial<Cask>[]): Promise<void> {
   const params = new URLSearchParams({ changes: JSON.stringify(changes) });
   const res = await apiClient.post<ApiSubmitResponse>('/cask/submit', params.toString());
   if (!res.data.success) throw new Error(res.data.error ?? 'Failed to submit cask');
+}
+
+export async function loadContainerSize(containerSizeId: number): Promise<ContainerSize> {
+  const res = await apiClient.get<ApiFormResponse<ContainerSize>>('/containersize/load_form', {
+    params: { container_size_id: containerSizeId },
+  });
+  if (!res.data.success) throw new Error(res.data.error ?? 'Failed to load container size');
+  return res.data.data;
 }

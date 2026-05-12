@@ -100,4 +100,9 @@ describe('MeasurementForm', () => {
     expect(getByDisplayValue('30')).toBeTruthy();
     expect(getByDisplayValue('nearly empty')).toBeTruthy();
   });
+
+  it('displays volumeError when provided', () => {
+    const { getByTestId } = renderForm({ volumeError: 'Cannot exceed previous measurement (40)' });
+    expect(getByTestId('volume-error').props.children).toBe('Cannot exceed previous measurement (40)');
+  });
 });

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Appbar, ActivityIndicator, Text, FAB, Portal, Modal, Snackbar } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCaskDips, useMeasurementBatches, useSubmitMeasurement } from '@/hooks/useCaskMeasurements';
+import { useCask, useContainerSize } from '@/hooks/useCasks';
 import MeasurementCard from '@/components/MeasurementCard';
 import MeasurementForm from '@/components/MeasurementForm';
 import type { CaskMeasurement } from '@/types/api';
@@ -14,24 +15,59 @@ export default function MeasurementsScreen() {
   const { data: dips, isLoading, error, refetch } = useCaskDips(id);
   const festivalIdNum = Number(festivalId);
   const { data: batches, isLoading: batchesLoading, error: batchesError } = useMeasurementBatches(festivalIdNum);
+  const { data: cask } = useCask(id);
+  const { data: containerSize } = useContainerSize(cask?.container_size_id ?? 0);
   const { mutate: submit, isPending } = useSubmitMeasurement(id);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingDip, setEditingDip] = useState<CaskMeasurement | null>(null);
   const [snackVisible, setSnackVisible] = useState(false);
   const [snackMessage, setSnackMessage] = useState('');
+  const [volumeError, setVolumeError] = useState<string | undefined>();
 
   const openAdd = () => {
     setEditingDip(null);
+    setVolumeError(undefined);
     setModalVisible(true);
   };
 
   const openEdit = (dip: CaskMeasurement) => {
     setEditingDip(dip);
+    setVolumeError(undefined);
     setModalVisible(true);
   };
 
   const handleSubmit = (values: MeasurementFormValues) => {
+    setVolumeError(undefined);
+
+    if (values.volume !== '') {
+      const v = Number(values.volume);
+      const selectedBatch = batches?.find(
+        (b) => b.measurement_batch_id === values.measurement_batch_id,
+      );
+
+      if (containerSize != null && v > containerSize.volume) {
+        setVolumeError(`Cannot exceed container capacity (${containerSize.volume})`);
+        return;
+      }
+
+      if (selectedBatch && dips) {
+        const priorVolumes = dips
+          .filter((d) => {
+            if (editingDip && d.cask_measurement_id === editingDip.cask_measurement_id) return false;
+            return d.measurement_time < selectedBatch.measurement_time && d.volume != null;
+          })
+          .map((d) => d.volume as number);
+        if (priorVolumes.length > 0) {
+          const maxAllowed = Math.min(...priorVolumes);
+          if (v > maxAllowed) {
+            setVolumeError(`Cannot exceed previous measurement (${maxAllowed})`);
+            return;
+          }
+        }
+      }
+    }
+
     const payload = {
       cask_id: id,
       measurement_batch_id: values.measurement_batch_id,
@@ -87,28 +123,36 @@ export default function MeasurementsScreen() {
       <Portal>
         <Modal
           visible={modalVisible}
-          onDismiss={() => setModalVisible(false)}
+          onDismiss={() => { setModalVisible(false); setVolumeError(undefined); }}
+          style={{ justifyContent: 'flex-start' }}
           contentContainerStyle={styles.modal}
         >
-          <Text variant="titleMedium" style={styles.modalTitle}>
-            {editingDip ? 'Edit Measurement' : 'Add Measurement'}
-          </Text>
-          {batchesLoading && <ActivityIndicator animating size="small" style={{ marginBottom: 8 }} />}
-          {batchesError && (
-            <Text style={{ color: 'red', marginBottom: 8 }}>
-              Could not load batches: {batchesError.message}
-            </Text>
-          )}
-          <MeasurementForm
-            batches={batches ?? []}
-            defaultBatchId={editingDip?.measurement_batch_id}
-            defaultVolume={editingDip ? String(editingDip.volume ?? '') : ''}
-            defaultComment=""
-            isEdit={!!editingDip}
-            loading={isPending}
-            onSubmit={handleSubmit}
-            onCancel={() => setModalVisible(false)}
-          />
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+              <Text variant="titleMedium" style={styles.modalTitle}>
+                {editingDip ? 'Edit Measurement' : 'Add Measurement'}
+              </Text>
+              {batchesLoading && <ActivityIndicator animating size="small" style={{ marginBottom: 8 }} />}
+              {batchesError && (
+                <Text style={{ color: 'red', marginBottom: 8 }}>
+                  Could not load batches: {batchesError.message}
+                </Text>
+              )}
+              <MeasurementForm
+                batches={batches ?? []}
+                defaultBatchId={editingDip?.measurement_batch_id}
+                defaultVolume={editingDip ? String(editingDip.volume ?? '') : ''}
+                defaultComment=""
+                isEdit={!!editingDip}
+                loading={isPending}
+                volumeError={volumeError}
+                onSubmit={handleSubmit}
+                onCancel={() => { setModalVisible(false); setVolumeError(undefined); }}
+              />
+            </ScrollView>
+          </KeyboardAvoidingView>
         </Modal>
       </Portal>
 
@@ -131,7 +175,7 @@ const styles = StyleSheet.create({
   list: { paddingBottom: 80 },
   separator: { height: StyleSheet.hairlineWidth, backgroundColor: '#ccc' },
   fab: { position: 'absolute', right: 16, bottom: 16 },
-  modal: { backgroundColor: '#fff', margin: 20, padding: 20, borderRadius: 8 },
+  modal: { backgroundColor: '#fff', marginTop: 40, marginHorizontal: 20, padding: 20, borderRadius: 8 },
   modalTitle: { marginBottom: 16 },
   errorText: { color: 'red', textAlign: 'center' },
 });

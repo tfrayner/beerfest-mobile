@@ -26,6 +26,7 @@ interface Props {
   defaultComment?: string;
   isEdit: boolean;
   loading: boolean;
+  volumeError?: string;
   onSubmit: (values: MeasurementFormValues) => void;
   onCancel: () => void;
 }
@@ -41,6 +42,7 @@ export default function MeasurementForm({
   defaultComment = '',
   isEdit,
   loading,
+  volumeError,
   onSubmit,
   onCancel,
 }: Props) {
@@ -126,8 +128,8 @@ export default function MeasurementForm({
           />
         )}
       />
-      <HelperText type="error" visible={!!errors.volume}>
-        {errors.volume?.message}
+      <HelperText type="error" visible={!!errors.volume || !!volumeError} testID="volume-error">
+        {errors.volume?.message ?? volumeError}
       </HelperText>
 
       <Controller
