@@ -3,7 +3,7 @@ import { FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View 
 import { Appbar, ActivityIndicator, Text, FAB, Portal, Modal, Snackbar } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCaskDips, useMeasurementBatches, useSubmitMeasurement } from '@/hooks/useCaskMeasurements';
-import { useCask, useContainerSize } from '@/hooks/useCasks';
+import { useCask, useContainerSizes } from '@/hooks/useCasks';
 import MeasurementCard from '@/components/MeasurementCard';
 import MeasurementForm from '@/components/MeasurementForm';
 import type { CaskMeasurement } from '@/types/api';
@@ -16,8 +16,9 @@ export default function MeasurementsScreen() {
   const festivalIdNum = Number(festivalId);
   const { data: batches, isLoading: batchesLoading, error: batchesError } = useMeasurementBatches(festivalIdNum);
   const { data: cask } = useCask(id);
-  const { data: containerSize } = useContainerSize(cask?.container_size_id ?? 0);
-  const { mutate: submit, isPending } = useSubmitMeasurement(id);
+  const { data: containerSizes } = useContainerSizes();
+  const containerSize = containerSizes?.find((c) => c.container_size_id === cask?.container_size_id);
+  const { mutate: submit, isPending, isError: isSubmitError, error: submitError, reset: resetSubmit } = useSubmitMeasurement(id);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingDip, setEditingDip] = useState<CaskMeasurement | null>(null);
@@ -28,12 +29,14 @@ export default function MeasurementsScreen() {
   const openAdd = () => {
     setEditingDip(null);
     setVolumeError(undefined);
+    resetSubmit();
     setModalVisible(true);
   };
 
   const openEdit = (dip: CaskMeasurement) => {
     setEditingDip(dip);
     setVolumeError(undefined);
+    resetSubmit();
     setModalVisible(true);
   };
 
@@ -123,7 +126,7 @@ export default function MeasurementsScreen() {
       <Portal>
         <Modal
           visible={modalVisible}
-          onDismiss={() => { setModalVisible(false); setVolumeError(undefined); }}
+          onDismiss={() => { setModalVisible(false); setVolumeError(undefined); resetSubmit(); }}
           style={{ justifyContent: 'flex-start' }}
           contentContainerStyle={styles.modal}
         >
@@ -149,8 +152,11 @@ export default function MeasurementsScreen() {
                 loading={isPending}
                 volumeError={volumeError}
                 onSubmit={handleSubmit}
-                onCancel={() => { setModalVisible(false); setVolumeError(undefined); }}
+                onCancel={() => { setModalVisible(false); setVolumeError(undefined); resetSubmit(); }}
               />
+              {isSubmitError && (
+                <Text style={styles.errorText}>{submitError?.message}</Text>
+              )}
             </ScrollView>
           </KeyboardAvoidingView>
         </Modal>

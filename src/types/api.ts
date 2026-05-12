@@ -62,6 +62,7 @@ export interface MeasurementBatch {
 export interface ContainerSize {
   container_size_id: number;
   volume: number;
+  description: string;
 }
 
 export interface CaskMeasurement {  cask_measurement_id: number;

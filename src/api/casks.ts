@@ -31,10 +31,8 @@ export async function submitCask(changes: Partial<Cask>[]): Promise<void> {
   if (!res.data.success) throw new Error(res.data.error ?? 'Failed to submit cask');
 }
 
-export async function loadContainerSize(containerSizeId: number): Promise<ContainerSize> {
-  const res = await apiClient.get<ApiFormResponse<ContainerSize>>('/containersize/load_form', {
-    params: { container_size_id: containerSizeId },
-  });
-  if (!res.data.success) throw new Error(res.data.error ?? 'Failed to load container size');
-  return res.data.data;
+export async function listContainerSizes(): Promise<ContainerSize[]> {
+  const res = await apiClient.get<ApiListResponse<ContainerSize>>('/containersize/list');
+  if (!res.data.success) throw new Error(res.data.error ?? 'Failed to list container sizes');
+  return res.data.objects;
 }

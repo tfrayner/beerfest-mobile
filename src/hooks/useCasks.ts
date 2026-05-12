@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listCasks, listCasksByStillage, loadCask, submitCask, loadContainerSize } from '@/api/casks';
+import { listCasks, listCasksByStillage, loadCask, submitCask, listContainerSizes } from '@/api/casks';
 import type { Cask } from '@/types/api';
 
 export function useCasksByStillage(stillageLocationId: number) {
@@ -41,11 +41,10 @@ export function useSubmitCask() {
   });
 }
 
-export function useContainerSize(containerSizeId: number) {
+export function useContainerSizes() {
   return useQuery({
-    queryKey: ['containerSize', containerSizeId],
-    queryFn: () => loadContainerSize(containerSizeId),
-    enabled: containerSizeId > 0,
+    queryKey: ['containerSizes'],
+    queryFn: listContainerSizes,
     staleTime: 24 * 60 * 60 * 1000,
   });
 }

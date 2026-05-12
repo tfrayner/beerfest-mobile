@@ -10,7 +10,7 @@ import {
 } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useForm, Controller, useController } from 'react-hook-form';
-import { useCask, useSubmitCask } from '@/hooks/useCasks';
+import { useCask, useSubmitCask, useContainerSizes } from '@/hooks/useCasks';
 import StatusFlagsEditor from '@/components/StatusFlagsEditor';
 import type { Cask } from '@/types/api';
 import { TextInput } from 'react-native-paper';
@@ -30,6 +30,8 @@ export default function CaskDetailScreen() {
   const { caskId } = useLocalSearchParams<{ caskId: string }>();
   const id = Number(caskId);
   const { data: cask, isLoading, error } = useCask(id);
+  const { data: containerSizes } = useContainerSizes();
+  const containerSize = containerSizes?.find((c) => c.container_size_id === cask?.container_size_id);
   const { mutate: submitCask, isPending, isSuccess, isError, error: mutateError } = useSubmitCask();
   const [snackVisible, setSnackVisible] = useState(false);
 
@@ -101,6 +103,11 @@ export default function CaskDetailScreen() {
         <Text variant="bodySmall" style={styles.meta}>
           Festival: {cask.festival_name}
         </Text>
+        {containerSize && (
+          <Text variant="bodySmall" style={styles.meta}>
+            Container: {containerSize.description} ({containerSize.volume} L)
+          </Text>
+        )}
 
         <Divider style={styles.divider} />
 
