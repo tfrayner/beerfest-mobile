@@ -68,7 +68,7 @@ export default function LoginScreen() {
     >
       <View style={styles.inner}>
         <Text variant="headlineMedium" style={styles.title}>
-          BeerMobile
+          BeerFestMobile
         </Text>
         <Text variant="bodyMedium" style={styles.subtitle}>
           Sign in to BeerFestDB

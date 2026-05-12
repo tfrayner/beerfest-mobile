@@ -1,4 +1,4 @@
-# BeerMobile
+# BeerFestMobile
 
 A React Native / Expo mobile app for managing casks and cask measurements against a [BeerFestDB](https://github.com/tfrayner/beerfestdb) server.
 
@@ -22,8 +22,8 @@ A React Native / Expo mobile app for managing casks and cask measurements agains
 ## Installation
 
 ```bash
-git clone https://github.com/tfrayner/beermobile.git
-cd beermobile
+git clone https://github.com/tfrayner/beerfest-mobile.git
+cd beerfest-mobile
 npm install
 ```
 
@@ -109,4 +109,4 @@ src/
 
 ## License
 
-BeerMobile is released under the [GNU General Public License v3.0](LICENSE).
+BeerFestMobile is released under the [GNU General Public License v3.0](LICENSE).

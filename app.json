@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "BeerMobile",
-    "slug": "beermobile",
-    "scheme": "beermobile",
+    "name": "BeerFestMobile",
+    "slug": "beerfestmobile",
+    "scheme": "beerfestmobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.beermobile.app"
+      "bundleIdentifier": "com.beerfestmobile.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +24,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.beermobile.app"
+      "package": "com.beerfestmobile.app"
     },
     "web": {
       "bundler": "metro",

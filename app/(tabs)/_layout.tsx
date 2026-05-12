@@ -14,7 +14,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Festivals',
+          title: 'Stillages',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="beer" color={color} size={size} />
           ),
