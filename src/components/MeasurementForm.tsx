@@ -78,7 +78,10 @@ export default function MeasurementForm({
                   editable={false}
                   pointerEvents="none"
                   right={
-                    <TextInput.Icon icon={batchOpen ? 'menu-up' : 'menu-down'} />
+                    <TextInput.Icon
+                      icon={batchOpen ? 'menu-up' : 'menu-down'}
+                      onPress={() => setBatchOpen((o) => !o)}
+                    />
                   }
                   style={styles.input}
                   testID="batch-input"
