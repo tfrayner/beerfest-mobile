@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Appbar, ActivityIndicator, Text, FAB, Portal, Modal, Snackbar } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -18,6 +18,17 @@ export default function MeasurementsScreen() {
   const { data: cask } = useCask(id);
   const { data: containerSizes } = useContainerSizes();
   const containerSize = containerSizes?.find((c) => c.container_size_id === cask?.container_size_id);
+
+  const closestBatchId = useMemo(() => {
+    if (!batches || batches.length === 0) return undefined;
+    const now = Date.now();
+    return batches.reduce((best, b) =>
+      Math.abs(new Date(b.measurement_time).getTime() - now) <
+      Math.abs(new Date(best.measurement_time).getTime() - now)
+        ? b
+        : best,
+    ).measurement_batch_id;
+  }, [batches]);
   const { mutate: submit, isPending, isError: isSubmitError, error: submitError, reset: resetSubmit } = useSubmitMeasurement(id);
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -145,7 +156,7 @@ export default function MeasurementsScreen() {
               )}
               <MeasurementForm
                 batches={batches ?? []}
-                defaultBatchId={editingDip?.measurement_batch_id}
+                defaultBatchId={editingDip?.measurement_batch_id ?? closestBatchId}
                 defaultVolume={editingDip ? String(editingDip.volume ?? '') : ''}
                 defaultComment=""
                 isEdit={!!editingDip}
