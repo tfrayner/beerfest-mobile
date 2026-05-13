@@ -147,14 +147,14 @@ export default function CaskDetailScreen() {
         <Divider style={styles.divider} />
 
         {/* Editable reference fields */}
-        <Text variant="labelLarge" style={styles.sectionLabel}>References</Text>
+        <Text variant="labelLarge" style={styles.sectionLabel}>Cask Numbering</Text>
 
         <Controller
           control={control}
           name="int_reference"
           render={({ field: { value, onChange, onBlur } }) => (
             <TextInput
-              label="Internal Reference"
+              label="Cellaring Order"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
@@ -168,7 +168,7 @@ export default function CaskDetailScreen() {
           name="ext_reference"
           render={({ field: { value, onChange, onBlur } }) => (
             <TextInput
-              label="External Reference"
+              label="Brewery Cask No."
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
