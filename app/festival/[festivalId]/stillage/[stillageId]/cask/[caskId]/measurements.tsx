@@ -69,16 +69,29 @@ export default function MeasurementsScreen() {
       }
 
       if (selectedBatch && dips) {
-        const priorVolumes = dips
-          .filter((d) => {
-            if (editingDip && d.cask_measurement_id === editingDip.cask_measurement_id) return false;
-            return d.measurement_time < selectedBatch.measurement_time && d.volume != null;
-          })
+        const otherDips = dips.filter((d) =>
+          !(editingDip && d.cask_measurement_id === editingDip.cask_measurement_id) &&
+          d.volume != null,
+        );
+
+        const priorVolumes = otherDips
+          .filter((d) => d.measurement_time < selectedBatch.measurement_time)
           .map((d) => d.volume as number);
         if (priorVolumes.length > 0) {
           const maxAllowed = Math.min(...priorVolumes);
           if (v > maxAllowed) {
             setVolumeError(`Cannot exceed previous measurement (${maxAllowed})`);
+            return;
+          }
+        }
+
+        const laterVolumes = otherDips
+          .filter((d) => d.measurement_time > selectedBatch.measurement_time)
+          .map((d) => d.volume as number);
+        if (laterVolumes.length > 0) {
+          const minAllowed = Math.max(...laterVolumes);
+          if (v < minAllowed) {
+            setVolumeError(`Cannot be less than a later measurement (${minAllowed})`);
             return;
           }
         }
