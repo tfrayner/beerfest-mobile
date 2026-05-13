@@ -88,6 +88,9 @@ export default function CaskDetailScreen() {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title={`Cask ID: ${String(cask.festival_ref ?? cask.cask_id)}`} />
+        {cask.is_sale_or_return && (
+          <Text style={styles.sorLabel}>SALE OR RETURN</Text>
+        )}
         <Appbar.Action
           icon="clipboard-list-outline"
           onPress={() => router.push(
@@ -215,4 +218,5 @@ const styles = StyleSheet.create({
   input: { marginBottom: 12 },
   saveButton: { marginTop: 8 },
   errorText: { color: 'red', marginBottom: 8 },
+  sorLabel: { color: '#e65100', fontWeight: '700', fontSize: 11, alignSelf: 'center', marginRight: 8 },
 });
