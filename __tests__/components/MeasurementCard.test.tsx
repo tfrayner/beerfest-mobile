@@ -42,4 +42,15 @@ describe('MeasurementCard', () => {
     const { getByText } = renderCard({ ...DIP, volume: null });
     expect(getByText('— (Batch A)')).toBeTruthy();
   });
+
+  it('shows the comment below the timestamp when set', () => {
+    const { getByText } = renderCard({ ...DIP, comment: 'nearly gone' });
+    expect(getByText(/nearly gone/)).toBeTruthy();
+  });
+
+  it('does not show a comment line when comment is empty', () => {
+    const { queryByText } = renderCard({ ...DIP, comment: '' });
+    // The description should not contain a newline-separated comment
+    expect(queryByText(/\n/)).toBeNull();
+  });
 });

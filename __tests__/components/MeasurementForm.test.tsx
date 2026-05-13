@@ -105,4 +105,9 @@ describe('MeasurementForm', () => {
     const { getByTestId } = renderForm({ volumeError: 'Cannot exceed previous measurement (40)' });
     expect(getByTestId('volume-error').props.children).toBe('Cannot exceed previous measurement (40)');
   });
+
+  it('displays volumeError for a later-measurement constraint', () => {
+    const { getByTestId } = renderForm({ volumeError: 'Cannot be less than a later measurement (20)' });
+    expect(getByTestId('volume-error').props.children).toBe('Cannot be less than a later measurement (20)');
+  });
 });
