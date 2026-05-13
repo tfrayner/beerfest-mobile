@@ -4,6 +4,7 @@ import { Appbar, ActivityIndicator, Text, FAB, Portal, Modal, Snackbar } from 'r
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCaskDips, useMeasurementBatches, useSubmitMeasurement } from '@/hooks/useCaskMeasurements';
 import { useCask, useContainerSizes } from '@/hooks/useCasks';
+import { useCurrentFestivalId } from '@/hooks/useFestivals';
 import MeasurementCard from '@/components/MeasurementCard';
 import MeasurementForm from '@/components/MeasurementForm';
 import type { CaskMeasurement } from '@/types/api';
@@ -18,6 +19,8 @@ export default function MeasurementsScreen() {
   const { data: cask } = useCask(id);
   const { data: containerSizes } = useContainerSizes();
   const containerSize = containerSizes?.find((c) => c.container_size_id === cask?.container_size_id);
+  const currentFestivalId = useCurrentFestivalId();
+  const isCurrentFestival = currentFestivalId !== undefined && festivalIdNum === currentFestivalId;
 
   const closestBatchId = useMemo(() => {
     if (!batches || batches.length === 0) return undefined;
@@ -121,7 +124,7 @@ export default function MeasurementsScreen() {
         onRefresh={refetch}
         refreshing={isLoading}
         renderItem={({ item }) => (
-          <MeasurementCard dip={item} onPress={() => openEdit(item)} />
+          <MeasurementCard dip={item} onPress={() => isCurrentFestival && openEdit(item)} />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
@@ -173,7 +176,7 @@ export default function MeasurementsScreen() {
         </Modal>
       </Portal>
 
-      <FAB icon="plus" style={styles.fab} onPress={openAdd} />
+      {isCurrentFestival && <FAB icon="plus" style={styles.fab} onPress={openAdd} />}
 
       <Snackbar
         visible={snackVisible}

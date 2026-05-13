@@ -11,6 +11,7 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { useForm, Controller, useController } from 'react-hook-form';
 import { useCask, useSubmitCask, useContainerSizes } from '@/hooks/useCasks';
+import { useCurrentFestivalId } from '@/hooks/useFestivals';
 import StatusFlagsEditor from '@/components/StatusFlagsEditor';
 import type { Cask } from '@/types/api';
 import { TextInput } from 'react-native-paper';
@@ -32,6 +33,8 @@ export default function CaskDetailScreen() {
   const { data: cask, isLoading, error } = useCask(id);
   const { data: containerSizes } = useContainerSizes();
   const containerSize = containerSizes?.find((c) => c.container_size_id === cask?.container_size_id);
+  const currentFestivalId = useCurrentFestivalId();
+  const isCurrentFestival = currentFestivalId !== undefined && cask?.festival_id === currentFestivalId;
   const { mutate: submitCask, isPending, isSuccess, isError, error: mutateError } = useSubmitCask();
   const [snackVisible, setSnackVisible] = useState(false);
 
@@ -189,10 +192,10 @@ export default function CaskDetailScreen() {
           mode="contained"
           onPress={handleSubmit(onSubmit)}
           loading={isPending}
-          disabled={isPending}
+          disabled={isPending || !isCurrentFestival}
           style={styles.saveButton}
         >
-          Save Changes
+          {isCurrentFestival ? 'Save Changes' : 'Read-only (not current festival)'}
         </Button>
       </ScrollView>
 
