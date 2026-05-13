@@ -27,6 +27,7 @@ describe('apiClient', () => {
   describe('setUnauthorizedCallback', () => {
     it('invokes the registered callback when a 403 response is received', async () => {
       const cb = jest.fn();
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       setUnauthorizedCallback(cb);
 
       // Simulate a rejected axios error with status 403
@@ -43,6 +44,7 @@ describe('apiClient', () => {
       expect(cb).toHaveBeenCalledTimes(1);
 
       // Cleanup
+      warnSpy.mockRestore();
       setUnauthorizedCallback(() => {});
     });
 

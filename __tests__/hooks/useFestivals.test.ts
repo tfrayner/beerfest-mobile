@@ -1,8 +1,5 @@
-/**
- * Tests for useCurrentFestivalId hook.
- */
 import React from 'react';
-import { renderHook } from '@testing-library/react-native';
+import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Festival } from '@/types/api';
 
@@ -21,34 +18,49 @@ const FESTIVALS: Festival[] = [
   { festival_id: 2, year: 2026, name: 'CBF 2026', description: null, fst_start_date: '2026-05-01', fst_end_date: '2026-05-03' },
 ];
 
+let queryClient: QueryClient;
+let cleanupPending: (() => void) | null = null;
+
+beforeEach(() => {
+  queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+  cleanupPending = null;
+});
+
+afterEach(async () => {
+  if (cleanupPending) {
+    cleanupPending();
+    cleanupPending = null;
+  }
+  queryClient.clear();
+});
+
 function makeWrapper() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client }, children);
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
 }
 
 describe('useCurrentFestivalId', () => {
   it('returns the festival_id matching EXPO_PUBLIC_CURRENT_FESTIVAL', async () => {
     mockListFestivals.mockResolvedValue(FESTIVALS);
-    const { result, rerender } = renderHook(() => useCurrentFestivalId(), { wrapper: makeWrapper() });
-    // Wait for query to resolve
-    await new Promise((r) => setTimeout(r, 50));
-    rerender({});
-    expect(result.current).toBe(2);
+    const { result } = renderHook(() => useCurrentFestivalId(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(result.current).toBe(2));
   });
 
-  it('returns undefined while festivals are loading', async () => {
-    mockListFestivals.mockReturnValue(new Promise(() => {})); // never resolves
+  it('returns undefined while festivals are loading', () => {
+    mockListFestivals.mockReturnValue(
+      new Promise<Festival[]>((resolve) => {
+        cleanupPending = () => resolve([]);
+      }),
+    );
     const { result } = renderHook(() => useCurrentFestivalId(), { wrapper: makeWrapper() });
-    // No need to wait — before the query resolves the value is undefined
     expect(result.current).toBeUndefined();
   });
 
   it('returns undefined when no festival matches the env var', async () => {
     mockListFestivals.mockResolvedValue([FESTIVALS[0]]); // only CBF 2025
-    const { result, rerender } = renderHook(() => useCurrentFestivalId(), { wrapper: makeWrapper() });
-    await new Promise((r) => setTimeout(r, 50));
-    rerender({});
-    expect(result.current).toBeUndefined();
+    const { result } = renderHook(() => useCurrentFestivalId(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(result.current).toBeUndefined());
   });
 });
