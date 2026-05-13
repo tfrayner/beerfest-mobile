@@ -19,7 +19,7 @@ export default function MeasurementCard({ dip, onPress }: Props) {
   return (
     <List.Item
       title={`${dip.volume ?? '—'} (${dip.measurement_batch_name})`}
-      description={formatDateTime(dip.measurement_time)}
+      description={dip.comment ? `${formatDateTime(dip.measurement_time)}\n${dip.comment}` : formatDateTime(dip.measurement_time)}
       left={(props) => <List.Icon {...props} icon="gauge" />}
       right={(props) => <List.Icon {...props} icon="pencil-outline" />}
       onPress={onPress}
