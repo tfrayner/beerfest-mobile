@@ -30,7 +30,7 @@ export default function CaskCard({ cask, onPress }: Props) {
   return (
     <List.Item
       title={cask.product_name || '(unknown product)'}
-      description={`${cask.company_name || ''}  •  Ref: ${cask.festival_ref || '—'}`}
+      description={`${cask.company_name || ''}  •  Cask: ${cask.festival_ref || '—'}${cask.int_reference ? `  •  #${cask.int_reference}` : ''}`}
       left={(props) => <List.Icon {...props} icon="barrel" />}
       right={() => (
         <View style={styles.right}>

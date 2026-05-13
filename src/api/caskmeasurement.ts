@@ -24,9 +24,7 @@ export async function listMeasurementsByCask(caskId: number): Promise<CaskMeasur
 }
 
 export async function listMeasurementBatches(festivalId: number): Promise<MeasurementBatch[]> {
-  console.log('[listMeasurementBatches] festivalId:', festivalId);
   const res = await apiClient.get<ApiListResponse<MeasurementBatch>>(`/measurementbatch/list/${festivalId}`);
-  console.log('[listMeasurementBatches] response:', res.status, JSON.stringify(res.data));
   if (!res.data.success) throw new Error(res.data.error ?? 'Failed to list measurement batches');
   return res.data.objects;
 }

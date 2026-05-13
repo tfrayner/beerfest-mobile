@@ -88,4 +88,14 @@ describe('CaskCard', () => {
     const { getByText } = renderCard({ ...BASE_CASK, product_name: '' });
     expect(getByText('(unknown product)')).toBeTruthy();
   });
+
+  it('shows int_reference as #N when set', () => {
+    const { getByText } = renderCard({ ...BASE_CASK, int_reference: '42' });
+    expect(getByText(/#42/)).toBeTruthy();
+  });
+
+  it('does not show # suffix when int_reference is empty', () => {
+    const { queryByText } = renderCard({ ...BASE_CASK, int_reference: '' });
+    expect(queryByText(/No\.\s/)).toBeNull();
+  });
 });

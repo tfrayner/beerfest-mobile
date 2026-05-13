@@ -10,6 +10,7 @@ import type { Festival, ProductCategory } from '@/types/api';
 
 export default function SearchScreen() {
   const { data: festivals } = useFestivals();
+  const festivalsReversed = festivals ? [...festivals].reverse() : undefined;
   const { data: categories } = useProductCategories();
 
   const [selectedFestival, setSelectedFestival] = useState<Festival | null>(null);
@@ -18,10 +19,10 @@ export default function SearchScreen() {
 
   // Auto-select first festival when loaded
   useEffect(() => {
-    if (festivals && festivals.length > 0 && !selectedFestival) {
-      setSelectedFestival(festivals[festivals.length - 1]); // most recent
+    if (festivalsReversed && festivalsReversed.length > 0 && !selectedFestival) {
+      setSelectedFestival(festivalsReversed[0]); // most recent
     }
-  }, [festivals]);
+  }, [festivalsReversed]);
 
   // Auto-select 'beer' category when categories load
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function SearchScreen() {
           <Text variant="labelMedium" style={styles.label}>Festival</Text>
           <FlatList
             horizontal
-            data={festivals}
+            data={festivalsReversed}
             keyExtractor={(f) => String(f.festival_id)}
             renderItem={({ item }) => (
               <Button
@@ -59,7 +60,7 @@ export default function SearchScreen() {
                 style={styles.chip}
                 onPress={() => setSelectedFestival(item)}
               >
-                {item.name} {item.year}
+                {item.name}
               </Button>
             )}
           />

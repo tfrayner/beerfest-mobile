@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Appbar, ActivityIndicator, Text, FAB, Portal, Modal, Snackbar } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCaskDips, useMeasurementBatches, useSubmitMeasurement } from '@/hooks/useCaskMeasurements';
 import { useCask, useContainerSizes } from '@/hooks/useCasks';
+import { useCurrentFestivalId } from '@/hooks/useFestivals';
 import MeasurementCard from '@/components/MeasurementCard';
 import MeasurementForm from '@/components/MeasurementForm';
 import type { CaskMeasurement } from '@/types/api';
@@ -18,6 +19,19 @@ export default function MeasurementsScreen() {
   const { data: cask } = useCask(id);
   const { data: containerSizes } = useContainerSizes();
   const containerSize = containerSizes?.find((c) => c.container_size_id === cask?.container_size_id);
+  const currentFestivalId = useCurrentFestivalId();
+  const isCurrentFestival = currentFestivalId !== undefined && festivalIdNum === currentFestivalId;
+
+  const closestBatchId = useMemo(() => {
+    if (!batches || batches.length === 0) return undefined;
+    const now = Date.now();
+    return batches.reduce((best, b) =>
+      Math.abs(new Date(b.measurement_time).getTime() - now) <
+      Math.abs(new Date(best.measurement_time).getTime() - now)
+        ? b
+        : best,
+    ).measurement_batch_id;
+  }, [batches]);
   const { mutate: submit, isPending, isError: isSubmitError, error: submitError, reset: resetSubmit } = useSubmitMeasurement(id);
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -55,16 +69,29 @@ export default function MeasurementsScreen() {
       }
 
       if (selectedBatch && dips) {
-        const priorVolumes = dips
-          .filter((d) => {
-            if (editingDip && d.cask_measurement_id === editingDip.cask_measurement_id) return false;
-            return d.measurement_time < selectedBatch.measurement_time && d.volume != null;
-          })
+        const otherDips = dips.filter((d) =>
+          !(editingDip && d.cask_measurement_id === editingDip.cask_measurement_id) &&
+          d.volume != null,
+        );
+
+        const priorVolumes = otherDips
+          .filter((d) => d.measurement_time < selectedBatch.measurement_time)
           .map((d) => d.volume as number);
         if (priorVolumes.length > 0) {
           const maxAllowed = Math.min(...priorVolumes);
           if (v > maxAllowed) {
             setVolumeError(`Cannot exceed previous measurement (${maxAllowed})`);
+            return;
+          }
+        }
+
+        const laterVolumes = otherDips
+          .filter((d) => d.measurement_time > selectedBatch.measurement_time)
+          .map((d) => d.volume as number);
+        if (laterVolumes.length > 0) {
+          const minAllowed = Math.max(...laterVolumes);
+          if (v < minAllowed) {
+            setVolumeError(`Cannot be less than a later measurement (${minAllowed})`);
             return;
           }
         }
@@ -110,7 +137,7 @@ export default function MeasurementsScreen() {
         onRefresh={refetch}
         refreshing={isLoading}
         renderItem={({ item }) => (
-          <MeasurementCard dip={item} onPress={() => openEdit(item)} />
+          <MeasurementCard dip={item} onPress={() => isCurrentFestival && openEdit(item)} />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
@@ -145,7 +172,7 @@ export default function MeasurementsScreen() {
               )}
               <MeasurementForm
                 batches={batches ?? []}
-                defaultBatchId={editingDip?.measurement_batch_id}
+                defaultBatchId={editingDip?.measurement_batch_id ?? closestBatchId}
                 defaultVolume={editingDip ? String(editingDip.volume ?? '') : ''}
                 defaultComment=""
                 isEdit={!!editingDip}
@@ -162,7 +189,7 @@ export default function MeasurementsScreen() {
         </Modal>
       </Portal>
 
-      <FAB icon="plus" style={styles.fab} onPress={openAdd} />
+      {isCurrentFestival && <FAB icon="plus" style={styles.fab} onPress={openAdd} />}
 
       <Snackbar
         visible={snackVisible}
