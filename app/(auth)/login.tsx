@@ -80,6 +80,8 @@ export default function LoginScreen() {
           onChangeText={setUsername}
           autoCapitalize="none"
           autoCorrect={false}
+          autoComplete="username"
+          textContentType="username"
           style={styles.input}
           mode="outlined"
         />
@@ -88,6 +90,8 @@ export default function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          autoComplete="current-password"
+          textContentType="password"
           style={styles.input}
           mode="outlined"
         />
