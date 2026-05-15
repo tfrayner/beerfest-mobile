@@ -174,7 +174,7 @@ export default function CaskDetailScreen() {
           name="ext_reference"
           render={({ field: { value, onChange, onBlur } }) => (
             <TextInput
-              label="Brewery Cask No."
+              label="Brewery Reference"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
