@@ -76,8 +76,8 @@ eas login
 eas build --platform android   # or ios / all
 ```
 
-Remember to set `EXPO_PUBLIC_API_BASE_URL` as an EAS secret or in your
-`eas.json` `env` block so it is available at build time.
+Remember to set `EXPO_PUBLIC_API_BASE_URL` and `EXPO_PUBLIC_CURRENT_FESTIVAL` as EAS secrets or in your
+`eas.json` `env` block so it is available at build time. Note that each build can only access a single festival.
 
 ## Usage
 
