@@ -1,18 +1,15 @@
 import { FlatList, StyleSheet, View } from 'react-native';
 import { List, Text, ActivityIndicator, Appbar } from 'react-native-paper';
 import { router } from 'expo-router';
-import { useFestivals } from '@/hooks/useFestivals';
+import { useCurrentFestival } from '@/hooks/useFestivals';
 import { useStillageLocations } from '@/hooks/useStillageLocations';
 import { useAuthStore } from '@/store/authStore';
 import { apiClient } from '@/api/client';
 
-const CURRENT_FESTIVAL_NAME = process.env.EXPO_PUBLIC_CURRENT_FESTIVAL ?? '';
-
 export default function StillageScreen() {
-  const { data: festivals, isLoading: festivalsLoading, error: festivalsError } = useFestivals();
+  const { data: festival, isLoading: festivalLoading, error: festivalError } = useCurrentFestival();
   const logout = useAuthStore((s) => s.logout);
 
-  const festival = festivals?.find((f) => f.name === CURRENT_FESTIVAL_NAME);
   const festivalId = festival?.festival_id ?? 0;
 
   const {
@@ -22,8 +19,8 @@ export default function StillageScreen() {
     refetch,
   } = useStillageLocations(festivalId);
 
-  const isLoading = festivalsLoading || locationsLoading;
-  const error = festivalsError ?? locationsError;
+  const isLoading = festivalLoading || locationsLoading;
+  const error = festivalError ?? locationsError;
 
   const handleLogout = async () => {
     try {
@@ -36,11 +33,6 @@ export default function StillageScreen() {
     }
   };
 
-  const configError =
-    !festivalsLoading && festivals && !festival
-      ? `Festival "${CURRENT_FESTIVAL_NAME}" not found. Check EXPO_PUBLIC_CURRENT_FESTIVAL.`
-      : null;
-
   return (
     <View style={styles.container}>
       <Appbar.Header>
@@ -52,9 +44,9 @@ export default function StillageScreen() {
         <ActivityIndicator animating size="large" style={styles.centre} />
       )}
 
-      {(error || configError) && (
+      {error && (
         <View style={styles.centre}>
-          <Text style={styles.error}>{configError ?? error?.message}</Text>
+          <Text style={styles.error}>{error.message}</Text>
         </View>
       )}
 
@@ -75,7 +67,7 @@ export default function StillageScreen() {
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
-          !isLoading && !configError ? (
+          !isLoading ? (
             <View style={styles.centre}>
               <Text>No stillage locations found.</Text>
             </View>
