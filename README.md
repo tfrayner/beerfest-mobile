@@ -19,7 +19,7 @@ A React Native / Expo mobile app for managing casks and cask measurements agains
 - Or the **Expo Go** app on a physical device
 - A running BeerFestDB server accessible from your device/emulator
 
-## Installation
+## Development Environment
 
 ```bash
 git clone https://github.com/tfrayner/beerfestmobile.git
@@ -39,17 +39,13 @@ Edit `.env`:
 
 ```
 EXPO_PUBLIC_API_BASE_URL=https://your-beerfestdb-host.example.com
-EXPO_PUBLIC_CURRENT_FESTIVAL="CBF 2024"
 ```
 
 - `EXPO_PUBLIC_API_BASE_URL` — URL of your BeerFestDB server (baked in at build
   time; use your machine's LAN IP for local development, e.g.
   `http://192.168.1.100:3000`).
-- `EXPO_PUBLIC_CURRENT_FESTIVAL` — exact name of the festival the app should
-  display on the Stillages tab. Must match a `festival_name` value returned by
-  the server.
 
-## Running the App
+## Running the App (Development)
 
 ```bash
 # Start the Expo dev server (shows a QR code for Expo Go)
@@ -67,6 +63,10 @@ the terminal to open the relevant emulator.
 
 ## Building for Production
 
+Each build of the app 'bakes in' the configuration for the BeerFestDB website URL
+and the name of the current festival. As such, **each new festival requires a new
+build of the app**.
+
 Use [EAS Build](https://docs.expo.dev/build/introduction/) for production APK/IPA:
 
 ```bash
@@ -82,8 +82,8 @@ Remember to set `EXPO_PUBLIC_API_BASE_URL` and `EXPO_PUBLIC_CURRENT_FESTIVAL` as
 ## Usage
 
 1. **Login** — Enter your BeerFestDB username and password on the login screen.
-2. **Stillages tab** — Shows the stillage locations for the festival configured
-   via `EXPO_PUBLIC_CURRENT_FESTIVAL`. Tap a stillage to see its casks.
+2. **Stillages tab** — Shows the stillage locations for the current festival (as
+   configured in the BeerFestDB instance). Tap a stillage to see its casks.
 3. **Search tab** — Pick a festival and product category to list casks directly.
    The festival list auto-selects the most recent entry; the category list
    defaults to "Beer".
