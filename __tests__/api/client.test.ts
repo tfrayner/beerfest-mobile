@@ -25,21 +25,21 @@ describe('apiClient', () => {
   });
 
   describe('setUnauthorizedCallback', () => {
-    it('invokes the registered callback when a 403 response is received', async () => {
+    it('invokes the registered callback when a 401 response is received', async () => {
       const cb = jest.fn();
       const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       setUnauthorizedCallback(cb);
 
-      // Simulate a rejected axios error with status 403
-      const err = Object.assign(new Error('Forbidden'), {
+      // Simulate a rejected axios error with status 401
+      const err = Object.assign(new Error('Unauthorized'), {
         isAxiosError: true,
-        response: { status: 403 },
+        response: { status: 401, headers: {} },
       });
 
       // Reach into the response interceptors and call the rejection handler
       const interceptors = (apiClient.interceptors.response as any).handlers;
       const lastHandler = interceptors[interceptors.length - 1];
-      await expect(lastHandler.rejected(err)).rejects.toThrow('Forbidden');
+      await expect(lastHandler.rejected(err)).rejects.toThrow('Unauthorized');
 
       expect(cb).toHaveBeenCalledTimes(1);
 
@@ -48,13 +48,13 @@ describe('apiClient', () => {
       setUnauthorizedCallback(() => {});
     });
 
-    it('does not invoke the callback for non-403 errors', async () => {
+    it('does not invoke the callback for non-401 errors', async () => {
       const cb = jest.fn();
       setUnauthorizedCallback(cb);
 
       const err = Object.assign(new Error('Not Found'), {
         isAxiosError: true,
-        response: { status: 404 },
+        response: { status: 404, headers: {} },
       });
 
       const interceptors = (apiClient.interceptors.response as any).handlers;

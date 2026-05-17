@@ -20,13 +20,30 @@ export default function LoginScreen() {
     setLoading(true);
     setError('');
     try {
+      // GET /login so the server issues a session and returns its CSRF token
+      // in the X-CSRF-Token header (captured by the response interceptor).
+      // The Catalyst login action returns 403 for GET requests by design, so
+      // we suppress the error with validateStatus to ensure the response
+      // interceptor runs and captures the token and session cookie.
+      const getRes = await apiClient.get('/login', { validateStatus: (s) => s < 500 });
+      const rawGetCookies: unknown = getRes.headers['set-cookie'];
+      let preauthCookie = '';
+      if (Array.isArray(rawGetCookies)) {
+        preauthCookie = (rawGetCookies as string[]).map((c) => c.split(';')[0]).join('; ');
+      } else if (typeof rawGetCookies === 'string') {
+        preauthCookie = rawGetCookies.split(';')[0];
+      }
+
       const body = new URLSearchParams({
         data: JSON.stringify({ username: username.trim(), password }),
       });
       const res = await apiClient.post('/login', body.toString(), {
-        // Don't follow redirects so we can read Set-Cookie
+        // Don't follow redirects so we can read Set-Cookie.
+        // Use s < 500 so the documented 401 {success:false, message:"Login
+        // failed."} response is readable as a body rather than thrown.
         maxRedirects: 0,
-        validateStatus: (s) => s < 400,
+        validateStatus: (s) => s < 500,
+        headers: preauthCookie ? { Cookie: preauthCookie } : undefined,
       });
 
       if (!res.data?.success) {
