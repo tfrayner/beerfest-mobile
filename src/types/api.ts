@@ -47,7 +47,7 @@ export interface Cask {
   is_ready: boolean;
   is_condemned: boolean;
   is_sale_or_return: boolean;
-  cask_graveyard: boolean;
+  cask_graveyard: string | null;
   stillage_x: number;
   stillage_y: number;
   stillage_z: number;
