@@ -91,8 +91,15 @@ export default function CaskDetailScreen() {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title={`Cask ID: ${String(cask.festival_ref ?? cask.cask_id)}`} />
-        {cask.is_sale_or_return && (
-          <Text style={styles.sorLabel}>SALE OR RETURN</Text>
+        {(cask.is_sale_or_return || cask.cask_graveyard) && (
+          <View style={styles.headerLabels}>
+            {cask.is_sale_or_return && (
+              <Text style={styles.sorLabel}>SALE OR RETURN</Text>
+            )}
+            {cask.cask_graveyard && (
+              <Text style={styles.graveyardLabel}>Graveyard: {cask.cask_graveyard}</Text>
+            )}
+          </View>
         )}
         <Appbar.Action
           icon="clipboard-list-outline"
@@ -221,5 +228,7 @@ const styles = StyleSheet.create({
   input: { marginBottom: 12 },
   saveButton: { marginTop: 8 },
   errorText: { color: 'red', marginBottom: 8 },
-  sorLabel: { color: '#e65100', fontWeight: '700', fontSize: 11, alignSelf: 'center', marginRight: 8 },
+  sorLabel: { color: '#e65100', fontWeight: '700', fontSize: 11 },
+  graveyardLabel: { color: '#6d4c41', fontWeight: '700', fontSize: 11 },
+  headerLabels: { flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', marginRight: 8 },
 });
