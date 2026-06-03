@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-06-03
+
+### Added
+
+#### Current Festival
+- Current festival is now taken directly from the BeerFestDB JSON API rather than 
+being baked-in to the app. The app can therefore be used across multiple festivals 
+without updates.
+
+## [1.0.1] - 2026-05-22
+
+### Added
+
+#### Cask Detail screen
+- Cask graveyard details now included, where set in the database
+
 ## [1.0.0] - 2026-05-17
 
 ### Added
