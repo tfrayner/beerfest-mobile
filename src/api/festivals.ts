@@ -14,3 +14,9 @@ export async function loadFestival(festivalId: number): Promise<Festival> {
   if (!res.data.success) throw new Error(res.data.error ?? 'Failed to load festival');
   return res.data.data;
 }
+
+export async function currentFestival(): Promise<Festival> {
+  const res = await apiClient.get<ApiFormResponse<Festival>>('/festival/current_festival');
+  if (!res.data.success) throw new Error(res.data.error ?? 'Failed to load current festival');
+  return res.data.data;
+}
