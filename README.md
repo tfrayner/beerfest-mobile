@@ -63,9 +63,8 @@ the terminal to open the relevant emulator.
 
 ## Building for Production
 
-Each build of the app 'bakes in' the configuration for the BeerFestDB website URL
-and the name of the current festival. As such, **each new festival requires a new
-build of the app**.
+Each build of the app 'bakes in' the configuration for the BeerFestDB website URL, 
+and so each website instance needs its own app build.
 
 Use [EAS Build](https://docs.expo.dev/build/introduction/) for production APK/IPA:
 
