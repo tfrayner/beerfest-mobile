@@ -174,7 +174,7 @@ export default function MeasurementsScreen() {
                 batches={batches ?? []}
                 defaultBatchId={editingDip?.measurement_batch_id ?? closestBatchId}
                 defaultVolume={editingDip ? String(editingDip.volume ?? '') : ''}
-                defaultComment=""
+                defaultComment={editingDip?.comment ?? ''}
                 isEdit={!!editingDip}
                 loading={isPending}
                 volumeError={volumeError}
